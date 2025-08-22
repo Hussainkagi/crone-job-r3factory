@@ -10,46 +10,8 @@ import json
 from typing import Optional, List
 from http.server import BaseHTTPRequestHandler
 
-class SharePointReminderHandler(BaseHTTPRequestHandler):
-    """Vercel Serverless Function Handler"""
-    
-    def do_GET(self):
-        """Handle GET requests (for cron jobs)"""
-        try:
-            result = self.run_reminder_check()
-            
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            
-            response = {
-                'success': result,
-                'timestamp': datetime.now().isoformat(),
-                'message': 'Reminder check completed successfully' if result else 'Reminder check failed'
-            }
-            
-            self.wfile.write(json.dumps(response).encode())
-            
-        except Exception as e:
-            self.send_response(500)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            
-            response = {
-                'success': False,
-                'error': str(e),
-                'timestamp': datetime.now().isoformat()
-            }
-            
-            self.wfile.write(json.dumps(response).encode())
-    
-    def do_POST(self):
-        """Handle POST requests"""
-        self.do_GET()
-    
-    def log_message(self, format, *args):
-        """Custom logging"""
-        print(f"[{datetime.now().isoformat()}] {format % args}")
+class ReminderService:
+    """Core reminder functionality"""
     
     def convert_sharepoint_url_to_direct_download(self, shared_url: str) -> str:
         """Convert SharePoint shared URL to direct download URL"""
@@ -213,21 +175,25 @@ class SharePointReminderHandler(BaseHTTPRequestHandler):
         """Create HTML email body"""
         html_body = f"""
         <html>
-        <body>
-            <h2>🏦 Cheque Payment Due Reminder</h2>
-            <p>The following <strong>{len(reminder_data)}</strong> cheque payment(s) are due in 3 days:</p>
-            <table border="1" style="border-collapse: collapse; width: 100%;">
-                <thead>
-                    <tr style="background-color: #f2f2f2;">
+        <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <h2 style="color: #2c3e50; margin-bottom: 20px; text-align: center;">🏦 Cheque Payment Due Reminder</h2>
+                <p style="font-size: 16px; color: #34495e; margin-bottom: 20px;">
+                    The following <strong style="color: #e74c3c;">{len(reminder_data)}</strong> cheque payment(s) are due in 3 days:
+                </p>
+                <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                    <thead>
+                        <tr style="background-color: #3498db; color: white;">
         """
         
         for col in reminder_data.columns:
-            html_body += f"<th style='padding: 12px;'>{col}</th>"
+            html_body += f"<th style='padding: 12px; text-align: left; border: 1px solid #ddd;'>{col}</th>"
         
         html_body += "</tr></thead><tbody>"
         
-        for _, row in reminder_data.iterrows():
-            html_body += "<tr>"
+        for i, (_, row) in enumerate(reminder_data.iterrows()):
+            bg_color = "#f8f9fa" if i % 2 == 0 else "#ffffff"
+            html_body += f"<tr style='background-color: {bg_color};'>"
             for col in reminder_data.columns:
                 value = row[col]
                 if pd.isna(value):
@@ -236,29 +202,32 @@ class SharePointReminderHandler(BaseHTTPRequestHandler):
                     value = value.strftime('%d-%b-%Y')
                 else:
                     value = str(value)
-                html_body += f"<td style='padding: 10px;'>{value}</td>"
+                html_body += f"<td style='padding: 10px; border: 1px solid #ddd;'>{value}</td>"
             html_body += "</tr>"
         
         today_str = datetime.now().strftime('%d-%b-%Y')
         target_str = (datetime.now() + timedelta(days=3)).strftime('%d-%b-%Y')
         
         html_body += f"""
-                </tbody>
-            </table>
-            <p><strong>📅 Reminder Date:</strong> {today_str}</p>
-            <p><strong>🎯 Payment Due Date:</strong> {target_str}</p>
-            <p><em>⚡ Automated reminder from SharePoint</em></p>
+                    </tbody>
+                </table>
+                <div style="background-color: #ecf0f1; padding: 15px; border-radius: 5px; margin-top: 20px;">
+                    <p style="margin: 5px 0;"><strong>📅 Reminder Date:</strong> {today_str}</p>
+                    <p style="margin: 5px 0;"><strong>🎯 Payment Due Date:</strong> {target_str}</p>
+                    <p style="margin: 5px 0; color: #7f8c8d;"><em>⚡ Automated reminder from SharePoint</em></p>
+                </div>
+            </div>
         </body>
         </html>
         """
         
         return html_body
     
-    def send_email(self, reminder_data: pd.DataFrame, config: dict) -> bool:
+    def send_email(self, reminder_data: pd.DataFrame, config: dict) -> tuple[bool, int]:
         """Send reminder emails"""
         if reminder_data.empty:
             print("No reminders to send")
-            return True
+            return True, 0
         
         recipient_emails = [email.strip() for email in config['recipient_emails'].split(',')]
         success_count = 0
@@ -268,7 +237,7 @@ class SharePointReminderHandler(BaseHTTPRequestHandler):
                 msg = MIMEMultipart()
                 msg['From'] = config['email_username']
                 msg['To'] = recipient
-                msg['Subject'] = f"Cheque Payment Due Reminder - {len(reminder_data)} payment(s)"
+                msg['Subject'] = f"🏦 Cheque Payment Due Reminder - {len(reminder_data)} payment(s)"
                 
                 body = self.create_email_body(reminder_data)
                 msg.attach(MIMEText(body, 'html'))
@@ -284,13 +253,10 @@ class SharePointReminderHandler(BaseHTTPRequestHandler):
             except Exception as e:
                 print(f"❌ Failed to send email to {recipient}: {e}")
         
-        return success_count > 0
+        return success_count > 0, success_count
     
-    def run_reminder_check(self) -> bool:
-        """Main reminder check logic"""
-        print(f"🚀 Starting reminder check at {datetime.now().isoformat()}")
-        
-        # Get configuration from environment variables
+    def get_config(self) -> dict:
+        """Get configuration from environment variables"""
         config = {
             'sharepoint_url': os.getenv('SHAREPOINT_SHARED_URL'),
             'smtp_server': os.getenv('SMTP_SERVER', 'smtp.gmail.com'),
@@ -299,44 +265,216 @@ class SharePointReminderHandler(BaseHTTPRequestHandler):
             'email_password': os.getenv('EMAIL_PASSWORD'),
             'recipient_emails': os.getenv('RECIPIENT_EMAILS')
         }
+        return config
+    
+    def check_config_status(self, config: dict) -> dict:
+        """Check which configuration items are set"""
+        return {
+            'sharepoint_configured': bool(config.get('sharepoint_url')),
+            'email_configured': bool(config.get('email_username') and config.get('email_password')),
+            'recipients_configured': bool(config.get('recipient_emails')),
+            'all_configured': all([
+                config.get('sharepoint_url'),
+                config.get('email_username'),
+                config.get('email_password'),
+                config.get('recipient_emails')
+            ])
+        }
+    
+    def run_reminder_check(self) -> dict:
+        """Main reminder check logic"""
+        print(f"🚀 Starting reminder check at {datetime.now().isoformat()}")
+        
+        config = self.get_config()
+        config_status = self.check_config_status(config)
         
         # Validate configuration
         missing = [k for k, v in config.items() if not v]
         if missing:
-            print(f"❌ Missing configuration: {missing}")
-            return False
+            error_msg = f"Missing configuration: {missing}"
+            print(f"❌ {error_msg}")
+            return {
+                'success': False,
+                'error': error_msg,
+                'config': config_status,
+                'emails_sent': 0,
+                'reminders_found': 0
+            }
         
-        # Download and parse Excel file
-        excel_file = self.download_excel_file(config['sharepoint_url'])
-        if not excel_file:
-            return False
-        
-        df = self.parse_excel_data(excel_file)
-        if df is None:
-            return False
-        
-        # Find and send reminders
-        reminders = self.find_reminders_needed(df)
-        
-        if not reminders.empty:
-            return self.send_email(reminders, config)
-        else:
-            print("ℹ️ No reminders needed today")
-            return True
+        try:
+            # Download and parse Excel file
+            excel_file = self.download_excel_file(config['sharepoint_url'])
+            if not excel_file:
+                return {
+                    'success': False,
+                    'error': 'Failed to download Excel file from SharePoint',
+                    'config': config_status,
+                    'emails_sent': 0,
+                    'reminders_found': 0
+                }
+            
+            df = self.parse_excel_data(excel_file)
+            if df is None:
+                return {
+                    'success': False,
+                    'error': 'Failed to parse Excel file',
+                    'config': config_status,
+                    'emails_sent': 0,
+                    'reminders_found': 0
+                }
+            
+            # Find and send reminders
+            reminders = self.find_reminders_needed(df)
+            emails_sent = 0
+            
+            if not reminders.empty:
+                email_success, emails_sent = self.send_email(reminders, config)
+                if not email_success:
+                    return {
+                        'success': False,
+                        'error': 'Failed to send emails',
+                        'config': config_status,
+                        'emails_sent': 0,
+                        'reminders_found': len(reminders)
+                    }
+            
+            return {
+                'success': True,
+                'message': f'Reminder check completed. {len(reminders)} reminders found, {emails_sent} emails sent.',
+                'config': config_status,
+                'emails_sent': emails_sent,
+                'reminders_found': len(reminders)
+            }
+            
+        except Exception as e:
+            error_msg = f"Unexpected error: {str(e)}"
+            print(f"❌ {error_msg}")
+            return {
+                'success': False,
+                'error': error_msg,
+                'config': config_status,
+                'emails_sent': 0,
+                'reminders_found': 0
+            }
 
 
-# Vercel handler function
-def handler(request, response):
-    """Vercel serverless function entry point"""
-    handler_instance = SharePointReminderHandler()
+class handler(BaseHTTPRequestHandler):
+    """Vercel Serverless Function Handler"""
     
-    # Mock the request/response for BaseHTTPRequestHandler
-    handler_instance.command = request.method
-    handler_instance.path = request.url
+    def do_GET(self):
+        """Handle GET requests (for cron jobs and status checks)"""
+        self._handle_request()
     
-    if request.method == 'GET':
-        handler_instance.do_GET()
-    else:
-        handler_instance.do_POST()
+    def do_POST(self):
+        """Handle POST requests (for manual triggers)"""
+        self._handle_request()
     
-    return response
+    def _handle_request(self):
+        """Handle both GET and POST requests"""
+        try:
+            service = ReminderService()
+            
+            # Get request body for POST requests
+            content_length = int(self.headers.get('Content-Length', 0))
+            if content_length > 0:
+                post_data = self.rfile.read(content_length)
+                try:
+                    request_data = json.loads(post_data.decode('utf-8'))
+                except:
+                    request_data = {}
+            else:
+                request_data = {}
+            
+            # Run the reminder check
+            result = service.run_reminder_check()
+            
+            # Add timestamp and request info
+            result['timestamp'] = datetime.now().isoformat()
+            result['method'] = self.command
+            result['manual_trigger'] = request_data.get('manual', False)
+            
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+            self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+            self.end_headers()
+            
+            self.wfile.write(json.dumps(result, indent=2).encode())
+            
+        except Exception as e:
+            self.send_response(500)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            
+            error_response = {
+                'success': False,
+                'error': str(e),
+                'timestamp': datetime.now().isoformat(),
+                'method': self.command
+            }
+            
+            self.wfile.write(json.dumps(error_response, indent=2).encode())
+    
+    def do_OPTIONS(self):
+        """Handle OPTIONS requests for CORS"""
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+    
+    def log_message(self, format, *args):
+        """Custom logging"""
+        print(f"[{datetime.now().isoformat()}] {format % args}")
+
+
+# Alternative function-based handler for Vercel (if class-based doesn't work)
+def api_handler(request):
+    """Function-based handler for Vercel"""
+    try:
+        service = ReminderService()
+        
+        # Parse request data
+        request_data = {}
+        if hasattr(request, 'json') and request.json:
+            request_data = request.json
+        elif hasattr(request, 'body') and request.body:
+            try:
+                request_data = json.loads(request.body.decode('utf-8'))
+            except:
+                request_data = {}
+        
+        # Run the reminder check
+        result = service.run_reminder_check()
+        
+        # Add metadata
+        result['timestamp'] = datetime.now().isoformat()
+        result['method'] = getattr(request, 'method', 'UNKNOWN')
+        result['manual_trigger'] = request_data.get('manual', False)
+        
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            },
+            'body': json.dumps(result, indent=2)
+        }
+        
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
+                'success': False,
+                'error': str(e),
+                'timestamp': datetime.now().isoformat()
+            }, indent=2)
+        }

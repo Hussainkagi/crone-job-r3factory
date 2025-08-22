@@ -1,9 +1,25 @@
 {
-  "functions": {
-    "api/reminder.py": {
-      "runtime": "python3.9"
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/reminder.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "index.html",
+      "use": "@vercel/static"
     }
-  },
+  ],
+  "routes": [
+    {
+      "src": "/api/reminder",
+      "dest": "/api/reminder.py"
+    },
+    {
+      "src": "/",
+      "dest": "/index.html"
+    }
+  ],
   "crons": [
     {
       "path": "/api/reminder",

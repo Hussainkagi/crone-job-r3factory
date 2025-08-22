@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SharePoint Reminder Dashboard</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+        color: white;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .header p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .dashboard {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 30px;
+        margin-bottom: 40px;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+      }
+
+      .card h2 {
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+        color: #4a5568;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .status-card {
+        text-align: center;
+      }
+
+      .status-indicator {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin: 0 auto 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        color: white;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+      }
+
+      .status-online {
+        background: linear-gradient(45deg, #4caf50, #45a049);
+        animation: pulse 2s infinite;
+      }
+
+      .status-offline {
+        background: linear-gradient(45deg, #f44336, #da190b);
+      }
+
+      .status-warning {
+        background: linear-gradient(45deg, #ff9800, #f57c00);
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .btn {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .log-entry {
+        background: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 0 10px 10px 0;
+        transition: all 0.3s ease;
+      }
+
+      .log-entry:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+      }
+
+      .log-success {
+        border-left-color: #28a745;
+        background: #d4edda;
+      }
+
+      .log-error {
+        border-left-color: #dc3545;
+        background: #f8d7da;
+      }
+
+      .log-warning {
+        border-left-color: #ffc107;
+        background: #fff3cd;
+      }
+
+      .log-time {
+        font-size: 0.9rem;
+        color: #666;
+        font-weight: 600;
+      }
+
+      .log-message {
+        margin-top: 5px;
+        font-size: 0.95rem;
+      }
+
+      .loading {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 15px;
+        background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        border-radius: 15px;
+      }
+
+      .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      .stat-label {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 5px;
+      }
+
+      .config-info {
+        background: #e3f2fd;
+        border: 1px solid #2196f3;
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 20px;
+      }
+
+      .config-info h3 {
+        color: #1976d2;
+        margin-bottom: 10px;
+      }
+
+      .config-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        padding: 5px 0;
+        border-bottom: 1px solid rgba(33, 150, 243, 0.1);
+      }
+
+      .config-label {
+        font-weight: 600;
+        color: #424242;
+      }
+
+      .config-value {
+        color: #666;
+        font-family: monospace;
+        font-size: 0.9rem;
+      }
+
+      .footer {
+        text-align: center;
+        margin-top: 50px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 15px;
+        }
+
+        .header h1 {
+          font-size: 2rem;
+        }
+
+        .dashboard {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+
+        .card {
+          padding: 20px;
+        }
+
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🏦 SharePoint Reminder Dashboard</h1>
+        <p>Automated cheque payment reminder system</p>
+      </div>
+
+      <div class="dashboard">
+        <div class="card status-card">
+          <h2>📊 System Status</h2>
+          <div id="statusIndicator" class="status-indicator status-offline">
+            ❓
+          </div>
+          <h3 id="statusText">Checking...</h3>
+          <p id="statusDetails">Loading system status...</p>
+          <div class="stats">
+            <div class="stat-item">
+              <div id="totalRuns" class="stat-number">0</div>
+              <div class="stat-label">Total Runs</div>
+            </div>
+            <div class="stat-item">
+              <div id="emailsSent" class="stat-number">0</div>
+              <div class="stat-label">Emails Sent</div>
+            </div>
+            <div class="stat-item">
+              <div id="lastRun" class="stat-number">-</div>
+              <div class="stat-label">Last Run</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>⚙️ Manual Controls</h2>
+          <button id="testBtn" class="btn">
+            <span id="testBtnText">🧪 Run Test Check</span>
+          </button>
+          <br /><br />
+          <button id="clearLogsBtn" class="btn">🗑️ Clear Today's Logs</button>
+
+          <div class="config-info">
+            <h3>Configuration Status</h3>
+            <div class="config-item">
+              <span class="config-label">SharePoint URL:</span>
+              <span id="configSharePoint" class="config-value"
+                >Not configured</span
+              >
+            </div>
+            <div class="config-item">
+              <span class="config-label">Email Server:</span>
+              <span id="configEmail" class="config-value">Not configured</span>
+            </div>
+            <div class="config-item">
+              <span class="config-label">Recipients:</span>
+              <span id="configRecipients" class="config-value"
+                >Not configured</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>📝 Today's Activity Log</h2>
+          <div id="logContainer">
+            <p style="text-align: center; color: #666; font-style: italic">
+              Loading today's logs...
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <p>
+          ⚡ Automated by Vercel Serverless Functions | Last updated:
+          <span id="lastUpdated">-</span>
+        </p>
+      </div>
+    </div>
+
+    <script>
+      class ReminderDashboard {
+        constructor() {
+          this.apiBase = window.location.origin;
+          this.storageKey = "reminder_logs_" + this.getTodayKey();
+          this.statsKey = "reminder_stats";
+          this.init();
+        }
+
+        getTodayKey() {
+          return new Date().toISOString().split("T")[0];
+        }
+
+        init() {
+          this.loadStats();
+          this.loadTodayLogs();
+          this.checkSystemStatus();
+          this.setupEventListeners();
+          this.updateLastUpdated();
+
+          // Auto refresh every 5 minutes
+          setInterval(() => {
+            this.checkSystemStatus();
+            this.updateLastUpdated();
+          }, 5 * 60 * 1000);
+
+          // Clean old logs daily
+          this.cleanOldLogs();
+        }
+
+        setupEventListeners() {
+          document.getElementById("testBtn").addEventListener("click", () => {
+            this.runManualTest();
+          });
+
+          document
+            .getElementById("clearLogsBtn")
+            .addEventListener("click", () => {
+              this.clearTodayLogs();
+            });
+        }
+
+        loadStats() {
+          const stats = JSON.parse(
+            localStorage.getItem(this.statsKey) ||
+              '{"totalRuns": 0, "emailsSent": 0, "lastRun": null}'
+          );
+          document.getElementById("totalRuns").textContent = stats.totalRuns;
+          document.getElementById("emailsSent").textContent = stats.emailsSent;
+          document.getElementById("lastRun").textContent = stats.lastRun
+            ? new Date(stats.lastRun).toLocaleTimeString("en-US", {
+                hour12: false,
+              })
+            : "-";
+        }
+
+        updateStats(success, emailsSent = 0) {
+          const stats = JSON.parse(
+            localStorage.getItem(this.statsKey) ||
+              '{"totalRuns": 0, "emailsSent": 0, "lastRun": null}'
+          );
+          stats.totalRuns++;
+          stats.emailsSent += emailsSent;
+          stats.lastRun = new Date().toISOString();
+          localStorage.setItem(this.statsKey, JSON.stringify(stats));
+          this.loadStats();
+        }
+
+        loadTodayLogs() {
+          const logs = JSON.parse(
+            localStorage.getItem(this.storageKey) || "[]"
+          );
+          const container = document.getElementById("logContainer");
+
+          if (logs.length === 0) {
+            container.innerHTML =
+              '<p style="text-align: center; color: #666; font-style: italic;">No activity logged for today</p>';
+            return;
+          }
+
+          container.innerHTML = logs
+            .map(
+              (log) => `
+                    <div class="log-entry log-${log.type}">
+                        <div class="log-time">${new Date(
+                          log.timestamp
+                        ).toLocaleTimeString()}</div>
+                        <div class="log-message">${log.message}</div>
+                    </div>
+                `
+            )
+            .join("");
+        }
+
+        addLog(type, message, emailCount = 0) {
+          const logs = JSON.parse(
+            localStorage.getItem(this.storageKey) || "[]"
+          );
+          logs.push({
+            timestamp: new Date().toISOString(),
+            type: type, // success, error, warning, info
+            message: message,
+            emailCount: emailCount,
+          });
+
+          // Keep only last 50 logs to prevent storage overflow
+          if (logs.length > 50) {
+            logs.splice(0, logs.length - 50);
+          }
+
+          localStorage.setItem(this.storageKey, JSON.stringify(logs));
+          this.loadTodayLogs();
+        }
+
+        clearTodayLogs() {
+          localStorage.removeItem(this.storageKey);
+          this.loadTodayLogs();
+          this.addLog("info", "🗑️ Today's logs cleared manually");
+        }
+
+        cleanOldLogs() {
+          const today = this.getTodayKey();
+          const allKeys = Object.keys(localStorage);
+
+          allKeys.forEach((key) => {
+            if (key.startsWith("reminder_logs_") && !key.endsWith(today)) {
+              localStorage.removeItem(key);
+            }
+          });
+        }
+
+        async checkSystemStatus() {
+          try {
+            // Check if the API endpoint exists
+            const response = await fetch(`${this.apiBase}/api/reminder`);
+            const data = await response.json();
+
+            this.updateStatusIndicator(
+              "online",
+              "System Online",
+              "Reminder service is operational"
+            );
+
+            // Check configuration from response
+            this.updateConfigStatus(data);
+          } catch (error) {
+            this.updateStatusIndicator(
+              "offline",
+              "System Offline",
+              `Error: ${error.message}`
+            );
+            this.addLog("error", `🚨 System check failed: ${error.message}`);
+          }
+        }
+
+        updateStatusIndicator(status, title, details) {
+          const indicator = document.getElementById("statusIndicator");
+          const statusText = document.getElementById("statusText");
+          const statusDetails = document.getElementById("statusDetails");
+
+          indicator.className = `status-indicator status-${status}`;
+
+          if (status === "online") {
+            indicator.textContent = "✅";
+          } else if (status === "warning") {
+            indicator.textContent = "⚠️";
+          } else {
+            indicator.textContent = "❌";
+          }
+
+          statusText.textContent = title;
+          statusDetails.textContent = details;
+        }
+
+        updateConfigStatus(data) {
+          const hasSharePoint =
+            data && data.config && data.config.sharepoint_configured;
+          const hasEmail = data && data.config && data.config.email_configured;
+          const hasRecipients =
+            data && data.config && data.config.recipients_configured;
+
+          document.getElementById("configSharePoint").textContent =
+            hasSharePoint ? "✅ Configured" : "❌ Missing";
+          document.getElementById("configEmail").textContent = hasEmail
+            ? "✅ Configured"
+            : "❌ Missing";
+          document.getElementById("configRecipients").textContent =
+            hasRecipients ? "✅ Configured" : "❌ Missing";
+        }
+
+        async runManualTest() {
+          const testBtn = document.getElementById("testBtn");
+          const testBtnText = document.getElementById("testBtnText");
+
+          testBtn.disabled = true;
+          testBtnText.innerHTML =
+            '<span class="loading"></span> Running test...';
+
+          this.addLog("info", "🧪 Manual test initiated");
+
+          try {
+            const response = await fetch(`${this.apiBase}/api/reminder`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ manual: true }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              const emailCount = result.emails_sent || 0;
+              this.addLog(
+                "success",
+                `✅ Test completed successfully. ${emailCount} reminder email(s) processed.`,
+                emailCount
+              );
+              this.updateStats(true, emailCount);
+
+              if (emailCount > 0) {
+                this.updateStatusIndicator(
+                  "warning",
+                  "Reminders Sent",
+                  `${emailCount} cheque payment(s) due in 3 days`
+                );
+              } else {
+                this.updateStatusIndicator(
+                  "online",
+                  "No Reminders Needed",
+                  "No payments due in 3 days"
+                );
+              }
+            } else {
+              this.addLog(
+                "error",
+                `❌ Test failed: ${result.error || "Unknown error"}`
+              );
+              this.updateStats(false);
+            }
+          } catch (error) {
+            this.addLog("error", `🚨 Manual test error: ${error.message}`);
+            this.updateStats(false);
+          } finally {
+            testBtn.disabled = false;
+            testBtnText.textContent = "🧪 Run Test Check";
+          }
+        }
+
+        updateLastUpdated() {
+          document.getElementById("lastUpdated").textContent =
+            new Date().toLocaleString();
+        }
+      }
+
+      // Initialize dashboard when page loads
+      document.addEventListener("DOMContentLoaded", () => {
+        new ReminderDashboard();
+      });
+    </script>
+  </body>
+</html>
