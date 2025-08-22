@@ -1,0 +1,21 @@
+{
+  "functions": {
+    "api/reminder.py": {
+      "runtime": "python3.9"
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/reminder",
+      "schedule": "0 9 * * *"
+    }
+  ],
+  "env": {
+    "SHAREPOINT_SHARED_URL": "https://r3factoryae-my.sharepoint.com/:x:/g/personal/technical_r3factory_ae/EX11P9jpMAZOnNlg6hhYGUUBNo56OzdCIhmi5yAdw1MFQQ?e=NUcdQE",
+    "SMTP_SERVER": "smtp.gmail.com",
+    "SMTP_PORT": "587",
+    "EMAIL_USERNAME": "hussain.f.kagi@gmail.com",
+    "EMAIL_PASSWORD": "aclb kyal bhsz epzy",
+    "RECIPIENT_EMAILS": "hussain.f.kagi@gmail.com,mukul.anand@r3factory.ae,accounts@r3factory.ae"
+  }
+}
