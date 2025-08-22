@@ -12,64 +12,64 @@
       }
 
       body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: #fafafa;
         color: #333;
+        line-height: 1.6;
       }
 
       .container {
-        max-width: 1200px;
+        max-width: 1000px;
         margin: 0 auto;
-        padding: 20px;
+        padding: 30px 20px;
       }
 
       .header {
         text-align: center;
         margin-bottom: 40px;
-        color: white;
       }
 
       .header h1 {
-        font-size: 2.5rem;
-        margin-bottom: 10px;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        font-size: 2rem;
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 8px;
       }
 
       .header p {
-        font-size: 1.1rem;
-        opacity: 0.9;
+        color: #666;
+        font-size: 1rem;
       }
 
       .dashboard {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        gap: 30px;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
         margin-bottom: 40px;
       }
 
       .card {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        padding: 30px;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e5e5;
+        transition: box-shadow 0.2s ease;
       }
 
       .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
       }
 
       .card h2 {
-        font-size: 1.5rem;
+        font-size: 1.25rem;
         margin-bottom: 20px;
-        color: #4a5568;
+        color: #333;
+        font-weight: 600;
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
       }
 
       .status-card {
@@ -77,30 +77,28 @@
       }
 
       .status-indicator {
-        width: 80px;
-        height: 80px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
-        margin: 0 auto 20px;
+        margin: 0 auto 16px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 2rem;
-        font-weight: bold;
+        font-size: 1.5rem;
         color: white;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
       }
 
       .status-online {
-        background: linear-gradient(45deg, #4caf50, #45a049);
+        background: #43ad47;
         animation: pulse 2s infinite;
       }
 
       .status-offline {
-        background: linear-gradient(45deg, #f44336, #da190b);
+        background: #dc3545;
       }
 
       .status-warning {
-        background: linear-gradient(45deg, #ff9800, #f57c00);
+        background: #ffc107;
       }
 
       @keyframes pulse {
@@ -108,86 +106,174 @@
           transform: scale(1);
         }
         50% {
-          transform: scale(1.05);
+          transform: scale(1.02);
         }
         100% {
           transform: scale(1);
         }
       }
 
+      .status-text {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #333;
+      }
+
+      .status-details {
+        color: #666;
+        font-size: 0.9rem;
+      }
+
       .btn {
-        background: linear-gradient(45deg, #667eea, #764ba2);
+        background: #43ad47;
         color: white;
         border: none;
-        padding: 12px 25px;
-        border-radius: 25px;
+        padding: 10px 20px;
+        border-radius: 8px;
         cursor: pointer;
-        font-size: 1rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: background 0.2s ease;
+        width: 100%;
+        margin-bottom: 12px;
       }
 
       .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-      }
-
-      .btn:active {
-        transform: translateY(0);
+        background: #3a9b40;
       }
 
       .btn:disabled {
-        opacity: 0.6;
+        background: #ccc;
         cursor: not-allowed;
+      }
+
+      .btn-secondary {
+        background: #f8f9fa;
+        color: #666;
+        border: 1px solid #e5e5e5;
+      }
+
+      .btn-secondary:hover {
+        background: #e9ecef;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-top: 20px;
+      }
+
+      .stat-item {
+        text-align: center;
+        padding: 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+      }
+
+      .stat-number {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #43ad47;
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 4px;
+      }
+
+      .config-info {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 16px;
+        border: 1px solid #e9ecef;
+      }
+
+      .config-info h3 {
+        color: #333;
+        margin-bottom: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+
+      .config-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        padding: 4px 0;
+      }
+
+      .config-label {
+        font-weight: 500;
+        color: #333;
+        font-size: 0.9rem;
+      }
+
+      .config-value {
+        color: #666;
+        font-size: 0.9rem;
+        font-weight: 500;
+      }
+
+      .config-value.success {
+        color: #43ad47;
+      }
+
+      .config-value.error {
+        color: #dc3545;
       }
 
       .log-entry {
         background: #f8f9fa;
-        border-left: 4px solid #667eea;
-        padding: 15px;
-        margin-bottom: 15px;
-        border-radius: 0 10px 10px 0;
-        transition: all 0.3s ease;
-      }
-
-      .log-entry:hover {
-        background: #e9ecef;
-        transform: translateX(5px);
+        border-left: 3px solid #43ad47;
+        padding: 12px 16px;
+        margin-bottom: 12px;
+        border-radius: 0 6px 6px 0;
       }
 
       .log-success {
-        border-left-color: #28a745;
-        background: #d4edda;
+        border-left-color: #43ad47;
+        background: #f0f8f0;
       }
 
       .log-error {
         border-left-color: #dc3545;
-        background: #f8d7da;
+        background: #fdf2f2;
       }
 
       .log-warning {
         border-left-color: #ffc107;
-        background: #fff3cd;
+        background: #fffbf0;
+      }
+
+      .log-info {
+        border-left-color: #17a2b8;
+        background: #f0f8ff;
       }
 
       .log-time {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
         color: #666;
         font-weight: 600;
       }
 
       .log-message {
-        margin-top: 5px;
-        font-size: 0.95rem;
+        margin-top: 4px;
+        font-size: 0.9rem;
+        color: #333;
       }
 
       .loading {
         display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 3px solid #f3f3f3;
-        border-top: 3px solid #667eea;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #fff3;
+        border-top: 2px solid #fff;
         border-radius: 50%;
         animation: spin 1s linear infinite;
       }
@@ -201,91 +287,42 @@
         }
       }
 
-      .stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 20px;
-        margin-top: 20px;
-      }
-
-      .stat-item {
-        text-align: center;
-        padding: 15px;
-        background: linear-gradient(45deg, #f8f9fa, #e9ecef);
-        border-radius: 15px;
-      }
-
-      .stat-number {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #667eea;
-      }
-
-      .stat-label {
-        font-size: 0.9rem;
-        color: #666;
-        margin-top: 5px;
-      }
-
-      .config-info {
-        background: #e3f2fd;
-        border: 1px solid #2196f3;
-        border-radius: 10px;
-        padding: 15px;
-        margin-top: 20px;
-      }
-
-      .config-info h3 {
-        color: #1976d2;
-        margin-bottom: 10px;
-      }
-
-      .config-item {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 8px;
-        padding: 5px 0;
-        border-bottom: 1px solid rgba(33, 150, 243, 0.1);
-      }
-
-      .config-label {
-        font-weight: 600;
-        color: #424242;
-      }
-
-      .config-value {
-        color: #666;
-        font-family: monospace;
-        font-size: 0.9rem;
-      }
-
       .footer {
         text-align: center;
-        margin-top: 50px;
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 0.9rem;
+        margin-top: 40px;
+        color: #666;
+        font-size: 0.8rem;
+        padding-top: 20px;
+        border-top: 1px solid #e5e5e5;
+      }
+
+      .empty-state {
+        text-align: center;
+        color: #666;
+        font-style: italic;
+        padding: 20px;
       }
 
       @media (max-width: 768px) {
         .container {
-          padding: 15px;
+          padding: 20px 15px;
         }
 
         .header h1 {
-          font-size: 2rem;
+          font-size: 1.5rem;
         }
 
         .dashboard {
           grid-template-columns: 1fr;
-          gap: 20px;
-        }
-
-        .card {
-          padding: 20px;
+          gap: 16px;
         }
 
         .stats {
           grid-template-columns: repeat(2, 1fr);
+        }
+
+        .card {
+          padding: 20px;
         }
       }
     </style>
@@ -293,7 +330,7 @@
   <body>
     <div class="container">
       <div class="header">
-        <h1>🏦 SharePoint Reminder Dashboard</h1>
+        <h1>SharePoint Reminder Dashboard</h1>
         <p>Automated cheque payment reminder system</p>
       </div>
 
@@ -303,8 +340,11 @@
           <div id="statusIndicator" class="status-indicator status-offline">
             ❓
           </div>
-          <h3 id="statusText">Checking...</h3>
-          <p id="statusDetails">Loading system status...</p>
+          <div id="statusText" class="status-text">Checking...</div>
+          <div id="statusDetails" class="status-details">
+            Loading system status...
+          </div>
+
           <div class="stats">
             <div class="stat-item">
               <div id="totalRuns" class="stat-number">0</div>
@@ -326,23 +366,24 @@
           <button id="testBtn" class="btn">
             <span id="testBtnText">🧪 Run Test Check</span>
           </button>
-          <br /><br />
-          <button id="clearLogsBtn" class="btn">🗑️ Clear Today's Logs</button>
+          <button id="clearLogsBtn" class="btn btn-secondary">
+            🗑️ Clear Today's Logs
+          </button>
 
           <div class="config-info">
             <h3>Configuration Status</h3>
             <div class="config-item">
-              <span class="config-label">SharePoint URL:</span>
+              <span class="config-label">SharePoint URL</span>
               <span id="configSharePoint" class="config-value"
                 >Not configured</span
               >
             </div>
             <div class="config-item">
-              <span class="config-label">Email Server:</span>
+              <span class="config-label">Email Server</span>
               <span id="configEmail" class="config-value">Not configured</span>
             </div>
             <div class="config-item">
-              <span class="config-label">Recipients:</span>
+              <span class="config-label">Recipients</span>
               <span id="configRecipients" class="config-value"
                 >Not configured</span
               >
@@ -353,16 +394,14 @@
         <div class="card">
           <h2>📝 Today's Activity Log</h2>
           <div id="logContainer">
-            <p style="text-align: center; color: #666; font-style: italic">
-              Loading today's logs...
-            </p>
+            <div class="empty-state">Loading today's logs...</div>
           </div>
         </div>
       </div>
 
       <div class="footer">
         <p>
-          ⚡ Automated by Vercel Serverless Functions | Last updated:
+          Automated by R3 Factory | Last updated:
           <span id="lastUpdated">-</span>
         </p>
       </div>
@@ -444,7 +483,7 @@
 
           if (logs.length === 0) {
             container.innerHTML =
-              '<p style="text-align: center; color: #666; font-style: italic;">No activity logged for today</p>';
+              '<div class="empty-state">No activity logged for today</div>';
             return;
           }
 
@@ -549,13 +588,28 @@
           const hasRecipients =
             data && data.config && data.config.recipients_configured;
 
-          document.getElementById("configSharePoint").textContent =
-            hasSharePoint ? "✅ Configured" : "❌ Missing";
-          document.getElementById("configEmail").textContent = hasEmail
+          const spElement = document.getElementById("configSharePoint");
+          const emailElement = document.getElementById("configEmail");
+          const recipientsElement = document.getElementById("configRecipients");
+
+          spElement.textContent = hasSharePoint
             ? "✅ Configured"
             : "❌ Missing";
-          document.getElementById("configRecipients").textContent =
-            hasRecipients ? "✅ Configured" : "❌ Missing";
+          spElement.className = hasSharePoint
+            ? "config-value success"
+            : "config-value error";
+
+          emailElement.textContent = hasEmail ? "✅ Configured" : "❌ Missing";
+          emailElement.className = hasEmail
+            ? "config-value success"
+            : "config-value error";
+
+          recipientsElement.textContent = hasRecipients
+            ? "✅ Configured"
+            : "❌ Missing";
+          recipientsElement.className = hasRecipients
+            ? "config-value success"
+            : "config-value error";
         }
 
         async runManualTest() {
